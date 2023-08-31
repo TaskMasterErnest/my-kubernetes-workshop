@@ -79,7 +79,8 @@ CMD ["./httpServer"]
 - We run this command, assuming you have the same values I have; `podman run -it --net container:41f3d6a0f851 nicolaka/netshoot:v0.11`.
 - This will plug into the network namespace of the HTTP server container and open up an interactive terminal for us.
 - If we run `curl localhost:8080` in the interactive terminal, we get back our message that we get if we go to the same location in our browser.
-[]!(./namespace-image.png)
+
+![](./namespace-image.png)
 
 
 ## Conclusion
