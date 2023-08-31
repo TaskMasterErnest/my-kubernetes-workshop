@@ -1,11 +1,11 @@
 # Joining Two Container Network via the Network Namespace
 
 ## CheckList
-- [] Create a simple HTTP server in Go
-- [] Create a Dockerfile for the Go application
-- [] Tag and push the image built to an image repository
-- [] Joining another container to running HTTP server container
-- [] Conclusion
+ [x] Create a simple HTTP server in Go
+ [x] Create a Dockerfile for the Go application
+ [] Tag and push the image built to an image repository
+ [] Joining another container to running HTTP server container
+ [] Conclusion
 
 
 ## Create a simple HTTP server in Go
