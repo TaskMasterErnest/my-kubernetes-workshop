@@ -1,0 +1,18 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-4.5.1
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    tier: frontend
+  name: http-pod
+spec:
+  containers:
+  - image: ernestklu/httpserver:v0.0.1
+    name: http
+    ports:
+    - containerPort: 8080
+      hostPort: 8080
+

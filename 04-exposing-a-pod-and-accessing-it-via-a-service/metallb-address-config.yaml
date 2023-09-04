@@ -1,0 +1,15 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ipaddr-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - # 172.18.255.1-172.18.255.250, enter your own address range here.
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: ipaddr-advertisement
+  namespace: metallb-system
+
