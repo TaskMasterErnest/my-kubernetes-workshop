@@ -1,0 +1,18 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-4.5.1
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-svc
+spec:
+  ports:
+  - name: "http-lb"
+    nodePort: 32608
+    port: 8080
+    targetPort: 8080
+  selector:
+    tier: frontend
+  type: LoadBalancer
+
