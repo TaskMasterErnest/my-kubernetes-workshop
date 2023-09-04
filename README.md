@@ -10,3 +10,5 @@ A repo containing my deep dive into how Kubernetes functions in detail.
 ## NOTE:
 - I will be using Podman to do the Docker-related work in this repo because I don't want to install Docker, not out of spite but I run a Fedora Workstation and it comes with Podman pre-installed. So I just decided to go with it.
 - Podman and Docker have almost similar commands, easily transferable/translatable syntax.
+- For my Kubernetes, I installed Docker finally and used that to power my local KinD cluster. Podman does rootless, giving no access to privileged ports, making it a headache to configure rootful mode for my experiment.
+- For the parts where I have to expose my application (without using NGINX Ingress), I use MetalLB to configure a LoadBalancer to do so. [Here](https://metallb.org/)
