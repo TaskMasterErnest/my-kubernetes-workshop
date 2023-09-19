@@ -65,3 +65,8 @@ To answer the questions we posed in the first section;
   - Step 13 shows us that the scheduler is responsible for assigning Pods to nodes.
   - Step 14 shows us that the kubelet is responsible for the spinning up of the physical containers.
   - Even though it was not talked about much in every stage, Steps 7-9 show that the API Server is responsible for providing the API to talk to the components.
+
+## Activity
+A final thing to do is to perform the migration of our Pageview application to Kubernetes.
+The application connects with a Redis datastore. 
+The Kubernetes manifest files to set up the application are in the `pageview-....yaml` and `redis-....yaml` files.

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tier: backend
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: backend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        tier: backend
+    spec:
+      containers:
+      - image: redis:alpine3.18
+        name: db
+        ports:
+        resources: {}
+status: {}
