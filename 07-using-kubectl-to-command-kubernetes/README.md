@@ -66,4 +66,47 @@ The imperative commands are of the form; `kubectl run nginx --image=nginx:alpine
 
 To get a list of all the Deployment objects in a particular namespace, we use the command `kubectl get deployments -n <namespace>`.
 
-A more encouraged way to create Deployments is by using a declarative YAML manifest file. This way, the changes can be tracked with a version control tool like Git
+A more encouraged way to create Deployments is by using a declarative YAML manifest file. This way, the changes can be tracked with a version control tool like Git.
+
+
+## Updating a Deployment
+Updating a Deployment is in two ways: moving from the current version to a recently-published (newer) version **and** rolling back from a current version to the previous version.
+
+Let us assume for the current Deployment, I want to raise the image version of NGINX to 1.9.1. There are two ways to do this - using the **kubectl set image** command and/or using the **kubectl apply** command.
+
+We can update the Deployment of the NGINX image using the following imperative command; `kubectl set image deployment/nginx-deployment nginx=nginx:1.9.1 --record.` The `deployment/nginx-deploy` is the name of the Deployment when you look it up in the Kubernetes cluster with the `kubectl get deploy` command (the **< object-type >/< object-name >** format). 
+
+The **--record** flag is to save the updates that have been made by the kubectl tool to the current resource/object.
+
+In using the declarative command format, we get the YAML manifest file that was used to create the NGINX Deployment, manually change the version of NGINX to 1.9.1 and apply the changes with the command `kubectl apply -f nginx-deployment.yaml --record`.
+
+### Performing a Rollback on Deployments
+It comes without saying that, in order to perform a rollback, we must have already performed an update to the resource/object.
+
+Using the previous update as our lauching pad, we can directly perform a rollback using the command, `kubectl  rollout undo deployments nginx-deployment`.
+
+This is no doubt fascinating but there is more to this. We can view the entire rollout history (mostly updates) done to our specific Deployment by running the command `kubectl rollout history deployment nginx-deployment`. It shows us a list of all the revisions made to this paticular Deployment. If you used the record flag on any update, the change that happens is stated in the rollout history for you to peruse.
+
+We can check out the details of a specific Deployment by running the `kubectl rollout history deployment nginx-deployment --revison=<number>` command to select the specific revision to review.
+
+We can also rollback a Deployment to a specific revision by using the **--to-revison** flag, like this, `kubectl rollout undo deployments nginx-deployment --to-revision=<number>`.
+
+
+## EMERGENCY ALERT / ACTIVITY
+You are a SysOps Engineer managing a Kubernetes cluster that has a web application deployed on it and made available to the public.
+You have been monitoring the application and have detected that it experiences throttling issues at peak times.
+Based on the monitoring, the solution you have concluded upon is to increase the memory and CPU allocated to the application.
+And in this case, you have to do a Live Edit of the application as it is running in the Kubernetes cluster.
+
+The steps to do this are simple (if you have beedn following every project in this workhop so far.), they are:
+1. deploy the application `sample-application.yaml` on the Kubernetes cluster.
+2. get the IP address of the service that exposes the application.
+3. edit the live deployment of the `melonvote-front` Deployment. Change the following:
+  - resources.limits.cpu
+  - resources.limits.memory
+  - resources.requests.cpu
+  - resources.requests.memory
+  
+  basically double these values and youy should be able to see the UI of the application.
+
+A lot of things are deprecated, so you will need to fix the application, rebuild it and deploy it to Dockerhub and pull it into you new Deployment. The link to the resources are [here](https://github.com/Azure-Samples/azure-voting-app-redis/blob/master/azure-vote/Dockerfile-for-app-service) and [here](https://learn.microsoft.com/en-us/azure/aks/tutorial-kubernetes-prepare-app).
