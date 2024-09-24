@@ -17,6 +17,8 @@ import (
     "net/http"
 )
 
+var visitorCount int
+
 func handler(w http.ResponseWriter, r *http.Request) {
     log.Printf("Ping from %s", r.RemoteAddr)
     // Increment the number of visitors.
