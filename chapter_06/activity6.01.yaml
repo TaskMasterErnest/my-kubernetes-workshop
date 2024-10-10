@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: arbitrary-product-application
+  namespace: test
+  labels:
+    environment: production
+    owner: product-development
+    critical: "false"
+  annotations:
+    team-link: "https://example.com"
+spec:
+  containers:
+  - name: arbitrary-product-application-container
+    image: nginx:latest
+    imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: infra-libraries-application
+  namespace: test
+  labels:
+    environment: production
+    owner: infra-libraries
+    critical: "true"
+  annotations:
+    team-link: "https://ask.com"
+spec:
+  containers:
+  - name: infra-libraries-application-container
+    image: nginx:latest
+    imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: infra-libraries-application-staging
+  namespace: test
+  labels:
+    environment: staging
+    owner: infra-libraries
+  annotations:
+    team-link: "https://ask.com"
+spec:
+  containers:
+  - name: infra-libraries-application-staging-container
+    image: nginx:latest
+    imagePullPolicy: IfNotPresent
