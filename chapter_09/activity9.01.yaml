@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: activity-ns
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: activity-storage-class
+provisioner: rancher.io/local-path
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: activity-pvc
+  namespace: activity-ns
+spec:
+  storageClassName: activity-storage-class
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: activity-pod
+  namespace: activity-ns
+spec:
+  containers:
+  - name: alpine-container-1
+    image: alpine
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: activity-storage
+      mountPath: /data/store
+    command: ['/bin/sh', '-ec', 'echo "data from container-1" > /data/store/file1.txt; sleep 3600']
+  - name: alpine-container-2
+    image: alpine
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: activity-storage
+      mountPath: /data/store
+    command: ['/bin/sh', '-ec', 'sleep 60; sleep 3600']
+  volumes:
+  - name: activity-storage
+    persistentVolumeClaim:
+      claimName: activity-pvc
+  restartPolicy: Always
