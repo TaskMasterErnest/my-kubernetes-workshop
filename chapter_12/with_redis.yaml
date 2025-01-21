@@ -1,0 +1,261 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gsb
+  labels:
+    role: client
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: db
+  labels:
+    tier: database
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: guestbook
+  namespace: gsb
+  labels:
+    app: guestbook
+spec:
+  replicas: 2
+  selector:
+    app: guestbook
+  template:
+    metadata:
+      labels:
+        app: guestbook
+    spec:
+      containers:
+      - name: guestbook
+        image: registry.k8s.io/guestbook:v3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-server
+          containerPort: 3000
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: guestbook
+  namespace: gsb
+  labels:
+    app: guestbook
+spec:
+  ports:
+  - port: 80
+    targetPort: http-server
+  selector:
+    app: guestbook
+  type: ClusterIP
+
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: redis-master
+  namespace: db
+  labels:
+    app: redis
+    role: master
+spec:
+  replicas: 1
+  selector:
+    app: redis
+    role: master
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+    spec:
+      containers:
+      - name: redis-master
+        image: redis:6.2.16-alpine
+        ports:
+        - name: redis-server
+          containerPort: 6379
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis-master
+  namespace: db
+  labels:
+    app: redis
+    role: master
+spec:
+  ports:
+  - port: 6379
+    targetPort: redis-server
+  selector:
+    app: redis
+    role: master
+
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: redis-replica
+  namespace: db
+  labels:
+    app: redis
+    role: replica
+spec:
+  replicas: 2
+  selector:
+    app: redis
+    role: replica
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: replica
+    spec:
+      containers:
+      - name: redis-replica
+        image: redis:6.2.16-alpine
+        command:
+          - redis-server
+        args:
+          - "--replicaof"
+          - "redis-master"
+          - "6379"
+        ports:
+        - name: redis-server
+          containerPort: 6379
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis-replica
+  namespace: db
+  labels:
+    app: redis
+    role: replica
+spec:
+  ports:
+  - port: 6379
+    targetPort: redis-server
+  selector:
+    app: redis
+    role: replica
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: gsb
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ernest.guestbook.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: guestbook
+                port:
+                  number: 80
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "guestbook-policy"
+  namespace: gsb
+spec:
+  endpointSelector:
+    matchLabels:
+      app: guestbook
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:app: redis
+        k8s:role: master
+        k8s:io.kubernetes.pod.namespace: db
+    toPorts:
+    - ports:
+      - port: "6379"
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "redis-master-policy"
+  namespace: db
+spec:
+  endpointSelector:
+    matchLabels:
+      app: redis
+      role: master
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:app: guestbook
+        k8s:io.kubernetes.pod.namespace: gsb
+    toPorts:
+    - ports:
+      - port: "6379"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:app: redis
+        k8s:role: replica
+        k8s:io.kubernetes.pod.namespace: db
+    toPorts:
+    - ports:
+      - port: "6379"
+        protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "redis-replica-policy"
+  namespace: db
+spec:
+  endpointSelector:
+    matchLabels:
+      app: redis
+      role: replica
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:app: redis
+        k8s:role: master
+        k8s:io.kubernetes.pod.namespace: db
+    toPorts:
+    - ports:
+      - port: "6379"
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
