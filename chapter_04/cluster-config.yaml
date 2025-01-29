@@ -7,6 +7,6 @@ nodes:
     kind: ClusterConfiguration
     apiServer:
         extraArgs:
-          enable-admission-plugins: LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook
+          enable-admission-plugins: LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,PodSecurity
 - role: worker
 - role: worker
